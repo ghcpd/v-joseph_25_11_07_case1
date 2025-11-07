@@ -1,0 +1,104 @@
+FileWatcher Pro v1.2 - Documentation Defects Report
+=====================================================
+
+CRITICAL ISSUES:
+================
+
+1. INCORRECT PARAMETER NAME IN README EXAMPLE
+   Location: README.md, Usage section
+   Issue: Example uses "recursiveMode: true" but implementation expects "recursive"
+   Code shows: this.recursive = options.recursive || false;
+   README shows: { recursiveMode: true }
+   Impact: Example code will not work as documented
+   Evidence: filewatcher.js line 8
+
+2. MISSING OPTION: filter (Regex filter)
+   Location: filewatcher.js line 9
+   Issue: Not documented in API Reference
+   Functionality: Allows filtering file changes based on regex pattern
+   Usage: const watcher = new FileWatcher("./logs", { filter: /\.log$/ });
+   Evidence: filewatcher.js lines 9, 15-16
+
+3. MISSING OPTION: logFile (File logging)
+   Location: filewatcher.js line 10
+   Issue: Not documented in API Reference
+   Functionality: Logs all file watcher events to specified file
+   Usage: const watcher = new FileWatcher("./logs", { logFile: "watcher.log" });
+   Evidence: filewatcher.js lines 10, 31-32
+
+4. DEPRECATED OPTION NOT MARKED
+   Location: filewatcher.js line 11
+   Issue: usePolling option exists but not documented, and should be marked deprecated
+   Status: Deprecated (likely Node.js deprecated feature)
+   Evidence: filewatcher.js line 11 comment: "should be marked deprecated"
+
+MAJOR MISSING API DOCUMENTATION:
+================================
+
+5. MISSING METHOD: debounceEvents(delayMs)
+   Location: filewatcher.js lines 24-34
+   Signature: debounceEvents(delayMs = 100)
+   Purpose: Debounces rapid file change events
+   Behavior: Emits "debouncedChange" event after delay period
+   Evidence: Not in README API Reference
+
+6. MISSING METHOD: waitForFile(filename, timeoutMs)
+   Location: filewatcher.js lines 36-50
+   Signature: async waitForFile(filename, timeoutMs = 5000)
+   Purpose: Waits for a specific file to appear in watched directory
+   Behavior: Polls every 200ms, rejects with timeout error
+   Returns: Promise<boolean>
+   Evidence: Not in README API Reference
+
+7. MISSING METHOD: watchOnce(filename) - DEPRECATED
+   Location: filewatcher.js lines 52-55
+   Issue: Deprecated method with console.warn but not documented
+   Recommendation: Use waitForFile() instead
+   Evidence: Not mentioned in README
+
+8. MISSING EVENT: "stopped"
+   Location: filewatcher.js line 21
+   Trigger: Emitted when stop() is called
+   Documentation: Not in README
+   Evidence: this.emit("stopped");
+
+9. MISSING EVENT: "debouncedChange"
+   Location: filewatcher.js line 29
+   Trigger: Emitted by debounceEvents() after delay
+   Event payload: Same as "change" event
+   Documentation: Not in README
+
+10. MISSING PROPERTY: logs (Array)
+    Location: filewatcher.js line 13
+    Purpose: Stores history of all watcher events
+    Accessible: After calling _log() internally
+    Documentation: Not in README
+
+DOCUMENTATION QUALITY ISSUES:
+=============================
+
+11. VAGUE API REFERENCE CLOSURE
+    Location: README.md, last line of API Reference
+    Issue: States "More advanced APIs will be added in the future"
+    Problem: Makes it unclear if current APIs are incomplete
+    Impact: Suggests future additions rather than acknowledging missing docs
+
+12. INCOMPLETE OPTIONS DOCUMENTATION
+    Location: README.md API Reference
+    Issue: Only documents one option (recursiveMode/recursive)
+    Missing: Description of how options are passed, defaults, or types
+
+TESTING STATUS:
+===============
+
+The README example will fail because:
+- new FileWatcher("./logs", { recursiveMode: true }) 
+  Result: recursive will be false (undefined || false)
+  Should be: new FileWatcher("./logs", { recursive: true })
+
+Summary: 12 documentation defects identified
+- 1 Incorrect example code
+- 4 Undocumented options
+- 4 Undocumented methods
+- 2 Undocumented events
+- 1 Undocumented property
