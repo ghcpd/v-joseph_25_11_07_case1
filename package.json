@@ -1,0 +1,8 @@
+{
+  "name": "filewatcher-pro-test",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "node tests/basicChangeTest.js && node tests/filterTest.js && node tests/debounceTest.js && node tests/waitForFileTest.js && node tests/logFileTest.js"
+  }
+}
