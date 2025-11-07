@@ -1,0 +1,66 @@
+Defects / Missing Documentation for FileWatcher Pro v1.2
+
+Summary:
+- The README omits several APIs and options implemented in `filewatcher.js`.
+- The README contains incorrect option naming for recursive watch.
+- Several useful events and methods are undocumented.
+
+Detailed Issues (with evidence):
+
+1) Option name mismatch - `recursive` vs `recursiveMode`
+- README example uses: `new FileWatcher('./logs', { recursiveMode: true })`
+- Implementation uses: `this.recursive = options.recursive || false;`
+- Evidence: file watch constructor in `filewatcher.js` (constructor, line):
+  this.recursive = options.recursive || false; // implementation
+- Impact: `recursiveMode` option will be ignored; users will think recursion is enabled but it will not be.
+
+2) Missing option: `filter`
+- Implementation: `this.filter = options.filter || null; // undocumented feature`
+- Behavior: If filter is set as a RegExp, events with filenames not matching it are ignored.
+- Evidence: In event handler in `start()` method: `if (this.filter && !filename.match(this.filter)) return;`
+- Impact: Users cannot find how to restrict events by filename patterns using README.
+
+3) Missing option: `logFile` & `logs` property
+- Implementation: `this.logFile = options.logFile || null;` and `this.logs = [];` and a `_log()` method that appends to `this.logs` and `logFile`.
+- Evidence: `_log` method writes: `this.logs.push(entry); if (this.logFile) fs.appendFileSync(this.logFile, entry + "\n");`
+- Impact: Users do not know how to enable persistent logs or inspect `logs` collected in runtime.
+
+4) Missing method: `debounceEvents(delayMs = 100)` and event `debouncedChange`
+- Implementation: `debounceEvents` attaches handler to 'change', debouncing to emit `debouncedChange`.
+- Evidence: `this.on('change', handler)` and `this.emit('debouncedChange', lastEvent);`
+- Impact: Users cannot debounce rapid events without this method; README should document its use and behavior.
+
+5) Missing method: `waitForFile(filename, timeoutMs = 5000)`
+- Implementation: Returns a Promise that resolves when a file exists in target dir or rejects on timeout.
+- Evidence: `if (fs.existsSync(`${this.targetDir}/${filename}`)) { resolve(true); } else if timeout reject`.
+- Impact: README lacks guidance for waiting for file creation (synchronous promise-based approach).
+
+6) Deprecated or undocumented features: `watchOnce()` and `usePolling`
+- `watchOnce()` is implemented but marked deprecated via console.warn; README doesn't advise using `waitForFile` instead.
+- `usePolling` is stored in `this.deprecatedOption = options.usePolling || false;` but not documented.
+- Evidence: `console.warn("watchOnce() is deprecated. Use waitForFile() instead.");` and `this.deprecatedOption = options.usePolling || false;`
+- Impact: Users might rely on these deprecated options or methods without warnings.
+
+7) Missing event: `stopped`
+- Implementation emits `stopped` event inside `stop()` method: `this.emit('stopped');`
+- Evidence: `stop()` method contains: `this._log("All watchers stopped"); this.emit("stopped");`
+- Impact: README doesn't instruct users how to subscribe or react to stop events.
+
+8) Minor: README examples failing or incomplete
+- README usage code: `import { FileWatcher } from "./filewatcher.js"; const watcher = new FileWatcher("./logs", { recursiveMode: true }); watcher.on("change", (event) => { console.log("File changed:", event.filename); }); watcher.start();`
+- Because of mismatch on `recursiveMode`, recursion may not be enabled as intended. This is the main example and may mislead users.
+
+Evidence from runtime test (console output) showing multiple events and method behavior:
+- `watchOnce() is deprecated. Use waitForFile() instead.` (runtime output)
+- `waitForFile result true` (runtime output)
+- `Log file exists: true` and log content sample created by `logFile` option in test
+- `debouncedChange` was emitted on the 'd' writes
+- See `test/test_examples.js` used for validation (present in workspace)
+
+Recommended actions:
+- Update README to document all features: `recursive`, `filter`, `logFile`, `debounceEvents`, `waitForFile`, `watchOnce` (deprecated), `usePolling` (deprecated), and event `stopped` and `debouncedChange`.
+- Fix README example to use `recursive` key (not `recursiveMode`) and clarify how to use filter and logFile.
+- Add example code for debouncedEvents and waitForFile.
+- Add a small test suite and scripts to run them (see `test/test_examples.js` and `run_tests.sh`).
+
+End of defects.txt
