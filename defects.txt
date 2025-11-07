@@ -1,0 +1,51 @@
+Defects found in FileWatcher Pro v1.2 README
+
+1. Incorrect option name for recursive watching
+- README: `new FileWatcher("./logs", { recursiveMode: true })`
+- Implementation: uses `options.recursive` in constructor: `this.recursive = options.recursive || false;`
+- Evidence: See `filewatcher.js` constructor lines: `this.recursive = options.recursive || false;`
+- Recommendation: README should use `recursive` or implementation should accept `recursiveMode` (normalize).
+
+2. Undocumented features in README
+- `filter` option: Implementation supports `options.filter` to ignore events not matching regex. Not documented.
+  Evidence: `this.filter = options.filter || null;` and check in watcher callback: `if (this.filter && !filename.match(this.filter)) return;`
+
+- `logFile` option: Implementation supports writing logs to a file. Not documented.
+  Evidence: `this.logFile = options.logFile || null;` and `_log()` method writes entries with `fs.appendFileSync()`.
+
+- `debounceEvents(delayMs)` method: Implementation creates a debounced event `debouncedChange`. Not documented.
+  Evidence: method `debounceEvents` attaches a handler and emits `debouncedChange`.
+
+- `waitForFile(filename, timeoutMs)` method: Implementation supports waiting for a file to exist and returns a Promise. Not documented.
+  Evidence: `waitForFile` function uses `fs.existsSync` and resolves or rejects after timeout.
+
+- `watchOnce(filename)` method: Implementation exists but it's deprecated and not documented in README.
+  Evidence: `console.warn('watchOnce() is deprecated. Use waitForFile() instead.');`
+
+3. Missing event docs
+- README documents only `change` event. Implementation also emits `stopped` and `debouncedChange`.
+  Evidence: `this.emit("stopped")` in `stop()` and `this.emit("debouncedChange", lastEvent);` in `debounceEvents()`.
+
+4. Public property `logs` not documented
+- Implementation exposes `this.logs` array storing log entries; README does not cover it.
+  Evidence: `this.logs = [];` and `_log` appends entries.
+
+5. Option `usePolling` is present and not documented; considered deprecated
+- Implementation sets `this.deprecatedOption = options.usePolling || false;` but README says nothing.
+  Evidence: line in constructor.
+
+6. README sample code uses Node ESM import `import { FileWatcher } from "./filewatcher.js";` but installation suggests `npm install filewatcher-pro`
+- If the package is used as an npm module, `import { FileWatcher } from 'filewatcher-pro';` or CommonJS require should be shown.
+- Evidence: README shows install command but then uses local file import path for the example.
+
+7. Example doesn't mention `package.json` type: module
+- Using `import` syntax requires `"type":"module"` in `package.json` or .mjs files; README doesn't mention this.
+
+8. Behavior of `start()` not well-specified
+- Implementation uses `fs.watch` which has platform-specific behaviors (rename vs change); README doesn't explain event types.
+
+9. No example to show `stop()` emits `stopped` or how to handle it
+- README mentions `stop()` but doesn't show what it emits nor how to confirm watchers terminated.
+
+
+Suggested fixes listed in `corrected_readme.md`.
