@@ -9,4 +9,6 @@ Identify any **missing or incorrect documentation** for major APIs that exist in
 Then:
 1. Generate `defects.txt` listing all missing or incorrect documentation and evidence.
 2. Generate `corrected_readme.md` with complete documentation and working examples.
-3. Provide minimal test scripts if necessary to verify correctness.
+3. setup.sh - Bash file to setup the environment 
+4. test_files - Test files to see if evertthing goes well 
+5. run_tests.sh - Test command to run testcases
