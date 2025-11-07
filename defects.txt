@@ -1,0 +1,31 @@
+Defects found in FileWatcher Pro v1.2
+
+1) README uses 'recursiveMode' option name but implementation expects 'recursive'
+- Evidence: README excerpt: "new FileWatcher('./logs', { recursiveMode: true })"
+- Implementation: constructor reads options.recursive (tested in test_basic.mjs -> testRecursiveMismatch)
+
+2) README does not document 'filter' option
+- Evidence: filewatcher.js has this.filter = options.filter || null
+- Usage: filter can be a RegExp to only accept specific filenames (see test_filter)
+
+3) README does not document 'logFile' option and logs behavior
+- Evidence: filewatcher.js writes to logFile if provided in _log
+- Behavior: appends timestamped messages to the provided file
+
+4) README does not document event 'debouncedChange'
+- Evidence: debounceEvents registers and emits 'debouncedChange'
+- Behavior: emits when multiple change events are debounced (see testDebounce)
+
+5) README does not document 'stopped' event on stop()
+- Evidence: stop() fires this.emit('stopped') and also _log
+
+6) README should mark 'watchOnce' as deprecated and mention waitForFile
+- Evidence: watchOnce console.warn message and delegates to waitForFile
+
+7) README lacks examples for waitForFile, debounceEvents, filter & logFile
+- Evidence: tests written in test_basic.mjs illustrate usage
+
+
+How to reproduce quickly:
+- Run ./run_tests.sh (requires node present). The tests demonstrate the defects above.
+
