@@ -1,0 +1,21 @@
+FileWatcher Pro v1.2 - Documentation Defects
+
+1) Option name mismatch for recursive watching
+- README uses: `new FileWatcher("./logs", { recursiveMode: true })`
+- Implementation expects: `options.recursive` (constructor sets `this.recursive = options.recursive || false`)
+- Evidence: `filewatcher.js` constructor lines show `this.recursive = options.recursive || false;`
+
+2) Undocumented options: `filter`, `logFile`, `usePolling` (deprecated)
+- `filter`: used to filter filenames using a RegExp. Implementation: `if (this.filter && !filename.match(this.filter)) return;`
+- `logFile`: path to append logs; implemented in `_log()`.
+- `usePolling`: present as `deprecatedOption` property and not documented; should be marked deprecated and optionally still supported.
+
+3) Missing API docs: `debounceEvents(delayMs)`, `waitForFile(filename, timeoutMs)`, `watchOnce(filename)` (deprecated alias), events `debouncedChange` and `stopped`.
+- `debounceEvents` registers a handler to emit `debouncedChange` after delay.
+- `waitForFile` returns a Promise resolving when file exists or rejects on timeout.
+- `watchOnce` prints a deprecation warning and returns `waitForFile()`.
+- `stop()` emits `stopped` event and logs "All watchers stopped".
+
+4) README example lacks Node `import` type/usage note and option name correction; shows `import { FileWatcher } from "./filewatcher.js";` which is fine for ESM but package install instructions may imply npm package usage.
+
+Evidence files: `filewatcher.js`, `README.md`, and `tests/run_examples.js` demonstrate mismatches and behaviors.
