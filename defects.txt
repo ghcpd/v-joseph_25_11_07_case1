@@ -1,0 +1,63 @@
+Defects and Missing Documentation for FileWatcher Pro v1.2
+
+1) Option name mismatch (README vs Implementation)
+- README claims option name: `recursiveMode`.
+- Implementation uses `options.recursive`.
+- Evidence: README usage example imports and instantiates with `new FileWatcher("./logs", { recursiveMode: true })` but filewatcher.js constructor reads `this.recursive = options.recursive || false;`.
+- Impact: Users following README will not enable recursive mode.
+
+2) Undocumented options in README
+- `filter` option (RegExp): implemented as `this.filter` and used to filter events.
+- `logFile` option (string path): implemented as `this.logFile` and used to append logs to a file.
+- `usePolling` (boolean): present as `deprecatedOption` property `usePolling` set from options; should be documented as deprecated.
+- Evidence: filewatcher.js shows these properties in the constructor.
+- Impact: Users cannot learn about built-in filtering, logging or deprecation behavior.
+
+3) Missing API methods and events
+- `debounceEvents(delayMs)`: implemented in the class, emits `debouncedChange` event. Not documented.
+- `waitForFile(filename, timeoutMs)`: implemented, returns a Promise resolving when file is found, rejecting on timeout. Not documented.
+- `watchOnce(filename)`: implemented as deprecated wrapper, prints warning and calls `waitForFile`. Not documented.
+- `stop()` emits `stopped` event and writes a log. README documents `stop()` but doesn't mention the `stopped` event or that logs are written.
+- Evidence: see methods and event emits in filewatcher.js.
+- Impact: Users may miss helpful features (debounced events, wait for creation), or not learn deprecation messaging.
+
+4) Log verbosity and event types
+- The `change` event provides `eventType` and `filename`, while README illustrates logging `event.filename`. This is OK, but README lacks full explanation of the event payload.
+- Evidence: filewatcher.js emits `this.emit("change", { eventType, filename });`
+- Impact: Users may expect different payloads or miss `eventType` usage.
+
+5) Example failing to show `filter` behavior
+- README example shows a simple `change` handler but doesn't show filtering or `debouncedChange` usage.
+- Impact: Users cannot see practical usage for `filter` or `debounceEvents`.
+
+6) Using `import` vs `require` - module type
+- README uses `import` syntax. The repository doesn't define `type: module` in package.json; without it Node may not accept `import` unless package.json set.
+- Evidence: No package.json exists prior to setup; we created `setup.sh` making package JSON include type. The README should mention `type: module` or show `require()` alternate.
+- Impact: New contributors could see import syntax fail by default.
+
+7) Ambiguous log format & location
+- `_log()` writes to `this.logs` array and `this.logFile`, but README doesn't describe log storage or behavior.
+- Evidence: `_log` organizes logs and appends to file if `logFile` is set.
+- Impact: Users won't know where logs go or how to access recent logs.
+
+4) Filter behavior may be environment/interleaving sensitive
+- Observation: In a sequential test run with multiple watchers started/stopped, filter matching sometimes didn't appear to match events (test suite failure). Running the same filter in isolation succeeded.
+- Evidence: During the `tests/test_suite.js` run, `filterTest` logs showed the regex printed, the `filename` matched expected string, but the filter `test()` and `match()` calls returned null/false for `file.only` while other runs (e.g., `run_filter_test.js`) succeeded.
+- Impact: There may be an OS-specific or timing-related edge-case where `fs.watch` events are coalesced or the file change event arrives in a different form (e.g., rename vs change) that interacts badly with the filter check. Consider using `RegExp.test(String(filename))` and normalizing the filename (trim) before the match to be more robust, or document the caveat.
+
+---
+Recommendation: Update README to reflect correct options, add documentation for all existing public methods and events, include examples for `filter`, `logFile`, `debounceEvents`, `debouncedChange`, `waitForFile`, and deprecation notice for `watchOnce` and `usePolling`. Also include a note that Node must run in ES module mode for the `import` example, or provide CommonJS examples.
+
+Evidence snippets from a run of `node test_watch.js`:
+- Observed multiple change events for the same file when writing to the log file (watcher.log), e.g. many repeated "Event: change -> watcher.log" lines; this is expected OS behavior, but README does not mention that a single file-write may produce many events.
+
+Evidence snippet for README mismatch:
+- README uses: `new FileWatcher("./logs", { recursiveMode: true });`
+- Implementation expects: `options.recursive` and uses `this.recursive = options.recursive || false;`
+
+Evidence snippet for undocumented methods (from filewatcher.js):
+- `debounceEvents(delayMs)` emits `debouncedChange` event.
+- `waitForFile(filename, timeoutMs)` returns a Promise and polls for file existence.
+- `watchOnce(filename)` prints deprecation message and delegates to `waitForFile`.
+
+These lines and evidence were captured from `filewatcher.js` source and the test run logs.

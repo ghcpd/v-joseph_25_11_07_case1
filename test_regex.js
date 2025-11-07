@@ -1,0 +1,1 @@
+console.log('file.only'.match(/\.only$/i));
