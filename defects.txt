@@ -1,0 +1,156 @@
+FileWatcher Pro v1.2 - Documentation Defects Report
+====================================================
+
+CRITICAL DEFECTS:
+-----------------
+
+1. INCORRECT OPTION NAME IN README EXAMPLE
+   Severity: CRITICAL
+   Location: README.md, line 16
+   Issue: Example uses `recursiveMode: true` but implementation expects `recursive`
+   Evidence:
+   - README.md line 16: `{ recursiveMode: true }`
+   - filewatcher.js line 9: `this.recursive = options.recursive || false;`
+   - Test result: When using `recursiveMode: true`, `watcher.recursive` is `false`
+   - Test result: When using `recursive: true`, `watcher.recursive` is `true`
+   Impact: The example in README.md will not work as intended - recursive watching will be disabled
+
+2. INCORRECT OPTION NAME IN API DOCUMENTATION
+   Severity: CRITICAL
+   Location: README.md, line 31
+   Issue: API documentation lists `recursiveMode` but implementation uses `recursive`
+   Evidence:
+   - README.md line 31: `- recursiveMode (boolean): Enable recursive watching.`
+   - filewatcher.js line 9: `this.recursive = options.recursive || false;`
+   Impact: Users following the documentation will use incorrect option name
+
+MISSING DOCUMENTATION:
+----------------------
+
+3. MISSING: `filter` OPTION
+   Severity: HIGH
+   Location: filewatcher.js, line 10
+   Issue: `filter` option exists but is not documented
+   Evidence:
+   - filewatcher.js line 10: `this.filter = options.filter || null; // undocumented feature`
+   - filewatcher.js line 22: `if (this.filter && !filename.match(this.filter)) return;`
+   - Functionality verified: Filter successfully filters file events by regex pattern
+   Impact: Users cannot use file filtering feature
+
+4. MISSING: `logFile` OPTION
+   Severity: MEDIUM
+   Location: filewatcher.js, line 11
+   Issue: `logFile` option exists but is not documented
+   Evidence:
+   - filewatcher.js line 11: `this.logFile = options.logFile || null; // undocumented feature`
+   - filewatcher.js line 69: `if (this.logFile) fs.appendFileSync(this.logFile, entry + "\n");`
+   - Functionality verified: Log file is created and events are logged
+   Impact: Users cannot enable logging to file
+
+5. MISSING: `usePolling` OPTION (DEPRECATED)
+   Severity: LOW
+   Location: filewatcher.js, line 12
+   Issue: `usePolling` option exists but is deprecated and undocumented
+   Evidence:
+   - filewatcher.js line 12: `this.deprecatedOption = options.usePolling || false; // should be marked deprecated`
+   - Note: Option is stored but not actually used in implementation
+   Impact: Users may try to use deprecated option without knowing it's deprecated
+
+6. MISSING: `debounceEvents()` METHOD
+   Severity: HIGH
+   Location: filewatcher.js, lines 37-48
+   Issue: Method exists but is not documented
+   Evidence:
+   - filewatcher.js line 37: `debounceEvents(delayMs = 100) {`
+   - Functionality verified: Method successfully debounces change events
+   - Emits `debouncedChange` event after delay
+   Impact: Users cannot debounce rapid file change events
+
+7. MISSING: `waitForFile()` METHOD
+   Severity: HIGH
+   Location: filewatcher.js, lines 50-64
+   Issue: Method exists but is not documented
+   Evidence:
+   - filewatcher.js line 50: `async waitForFile(filename, timeoutMs = 5000) {`
+   - Functionality verified: Method successfully waits for file to appear
+   - Returns Promise that resolves when file exists or rejects on timeout
+   Impact: Users cannot wait for specific files to appear
+
+8. MISSING: `watchOnce()` METHOD (DEPRECATED)
+   Severity: LOW
+   Location: filewatcher.js, lines 72-75
+   Issue: Deprecated method exists but is not documented
+   Evidence:
+   - filewatcher.js line 72: `watchOnce(filename) {`
+   - filewatcher.js line 73: `console.warn("watchOnce() is deprecated. Use waitForFile() instead.");`
+   - Functionality verified: Method calls waitForFile internally
+   Impact: Users may use deprecated method without knowing about waitForFile()
+
+9. MISSING: `stopped` EVENT
+   Severity: MEDIUM
+   Location: filewatcher.js, line 34
+   Issue: Event is emitted but not documented
+   Evidence:
+   - filewatcher.js line 34: `this.emit("stopped");`
+   - Functionality verified: Event fires when stop() is called
+   Impact: Users cannot listen for watcher stop events
+
+10. MISSING: `debouncedChange` EVENT
+    Severity: MEDIUM
+    Location: filewatcher.js, line 44
+    Issue: Event is emitted but not documented
+    Evidence:
+    - filewatcher.js line 44: `this.emit("debouncedChange", lastEvent);`
+    - Functionality verified: Event fires after debounce delay
+    Impact: Users cannot use debounced change events
+
+11. MISSING: `logs` PROPERTY
+    Severity: LOW
+    Location: filewatcher.js, line 14
+    Issue: Property exists but is not documented
+    Evidence:
+    - filewatcher.js line 14: `this.logs = [];`
+    - filewatcher.js line 68: `this.logs.push(entry);`
+    - Functionality verified: Logs array contains log entries
+    Impact: Users cannot access internal log history
+
+12. MISSING: EVENT OBJECT STRUCTURE DOCUMENTATION
+    Severity: MEDIUM
+    Location: README.md, line 19
+    Issue: Example shows `event.filename` but doesn't document full event structure
+    Evidence:
+    - README.md line 19: `console.log("File changed:", event.filename);`
+    - filewatcher.js line 24: `this.emit("change", { eventType, filename });`
+    - Event object contains both `eventType` and `filename` properties
+    Impact: Users don't know about `eventType` property
+
+13. MISSING: ERROR HANDLING DOCUMENTATION
+    Severity: MEDIUM
+    Location: README.md
+    Issue: No documentation about error handling or edge cases
+    Evidence:
+    - waitForFile() can throw timeout errors
+    - No documentation about what happens if targetDir doesn't exist
+    Impact: Users may encounter unexpected errors
+
+14. MISSING: EXAMPLES FOR ADVANCED FEATURES
+    Severity: MEDIUM
+    Location: README.md
+    Issue: Only basic example provided, no examples for advanced features
+    Evidence:
+    - No example for filter option
+    - No example for debounceEvents
+    - No example for waitForFile
+    - No example for logFile
+    Impact: Users cannot learn how to use advanced features
+
+SUMMARY:
+--------
+Total Defects: 14
+- Critical: 2 (incorrect option names)
+- High: 3 (missing important methods/options)
+- Medium: 6 (missing events, properties, examples)
+- Low: 3 (deprecated features, internal properties)
+
+All defects verified through testing with test_example.js, test_all_features.js, and test_functionality.js
+
